@@ -10,6 +10,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -84,13 +86,19 @@ public class CV {
                 imageFile = "img/cv02.jpg";
                 break;
         }
-        File f = new File(classLoader.getResource(imageFile).getFile());
-        String destination = "/home/guru/results/" + id + ".pdf";
-
-        Image image = null;
+        URL url = null;
         try {
-            image = Image.getInstance(f.toURL());
+            url = classLoader.getResource(imageFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String destination = "/home/cso/cvgen_results/" + id + ".pdf";
+
+        Image image;
+        try {
+            image = Image.getInstance(url);
         } catch (BadElementException | IOException e) {
+            e.printStackTrace();
             return "Error";
         }
 

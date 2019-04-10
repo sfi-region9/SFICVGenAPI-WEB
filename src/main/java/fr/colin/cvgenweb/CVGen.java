@@ -14,16 +14,13 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
-import spark.Redirect;
 import spark.Response;
 
+import javax.imageio.ImageIO;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.Part;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -33,10 +30,12 @@ import static spark.Spark.*;
 public class CVGen {
 
 
-    public static String baseServeur = "http://cv.nwa2coco.fr:4444/";
-    
-    
+    public static String baseServeur = "http://cv.nwa2coco.fr/";
+    private final static int numberOfImage = 2;
+
+
     public static void main(String... args) {
+        ipAddress("127.0.0.1");
         port(4444);
 
         setupRoutes();
@@ -61,19 +60,25 @@ public class CVGen {
             String crtRank = request.queryParams("crtrank");
             String crtSection = request.queryParams("crtsection");
 
+
             CV cv = new CV(Integer.parseInt(imageId), name, scc, crtAssigment, crtRank, crtPosition, crtSection, text);
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(cv));
-            Request request1 = new Request.Builder().url("http://cv.nwa2coco.fr:4444:4444/upload").post(requestBody).build();
+            Request request1 = new Request.Builder().url("http://cv.nwa2coco.fr/upload").post(requestBody).build();
             com.squareup.okhttp.Response response1 = new OkHttpClient().newCall(request1).execute();
+
 
             response.type("application/json");
             response.status(300);
-            System.out.println(response1.body().string());
-            CVAnswer cvAnswer = new Gson().fromJson(response1.body().string(), CVAnswer.class);
-            response.body(new Gson().toJson(new Answers("Uploaded succefully uploaded", 300)));
+            String body = response1.body().string();
+            System.out.println(body);
+
+
+            CVAnswer cvAnswer = new Gson().fromJson(body, CVAnswer.class);
+            response.body(new Gson().toJson(new Answers("Uploaded successfully uploaded", 300)));
             response.redirect(cvAnswer.getPdfDownload());
 
-            return new Gson().toJson(new Answers("Uploaded succefully uploaded", 300));
+
+            return new Gson().toJson(new Answers("Uploaded successfully uploaded", 300));
         }));
 
         get("/upload_success/:pdf/:png", (request, response) -> {
@@ -111,7 +116,7 @@ public class CVGen {
                 return new Gson().toJson(answer);
             }
 
-            CVAnswer answer1 = new CVAnswer("Your CV is succefully uploaded.", 300, "http://cv.nwa2coco.fr:4444/file/" + s + "/download_pdf", "");
+            CVAnswer answer1 = new CVAnswer("Your CV is successfully uploaded.", 300, "http://cv.nwa2coco.fr/file/" + s + "/download_pdf", "");
             response.type("application/json");
             response.status(301);
             response.body(new Gson().toJson(answer1));
@@ -130,7 +135,7 @@ public class CVGen {
             response.raw().getOutputStream().close();
             FileUtils.forceDelete(f);
             FileUtils.deleteDirectory(new File("/home/cso/cvgen_results/" + id + "/"));
-            return new Gson().toJson(new Answers("File is succefully downloaded", 301));
+            return new Gson().toJson(new Answers("File is successfully downloaded", 301));
         });
         get("/image_convertissor", (req, res) ->
                 "<!DOCTYPE html>\n" +
@@ -185,9 +190,30 @@ public class CVGen {
             FileUtils.forceDelete(file);
             FileUtils.forceDelete(fN);
             response.redirect("/");
-            return new Gson().toJson(new Answers("File is succefully converted", 300));
+            return new Gson().toJson(new Answers("File is successfully converted", 300));
         });
 
+
+        get("/backgrounds", (request, response) -> numberOfImage);
+        get("/backgrounds/:nbim", (request, response) -> {
+            response.type("application/jpeg");
+
+            int wH = 0;
+            String s = request.params("nbim");
+            try {
+                wH = Integer.parseInt(s);
+            } catch (Exception e) {
+                response.status(500);
+                response.body("Error");
+                return "Error";
+            }
+            if (wH > numberOfImage || wH <= 0) {
+                response.body("Error");
+                return "Error";
+            }
+
+            return gpes(response, wH);
+        });
 
     }
 
@@ -211,10 +237,25 @@ public class CVGen {
         return null;
     }
 
-
-    public static boolean exist(String id) {
+    private static boolean exist(String id) {
         return new File("/home/cso/cvgen_results/" + id + ".pdf").exists();
     }
 
+    private static String gpes(Response response, int wH) throws IOException {
+        ClassLoader classLoader = CVGen.class.getClassLoader();
+        BufferedImage img = ImageIO.read(classLoader.getResourceAsStream("img/cv0" + wH + ".jpg"));
+        ImageIOUtil.writeImage(img, "/home/cso/temps/cv0" + wH + ".jpg", 300);
+
+        response.header("Content-Disposition", "inline; filename=cv0" + wH + ".jpg");
+        response.status(200);
+
+        byte data[] = Files.readAllBytes(Paths.get(new File("/home/cso/temps/cv0" + wH + ".jpg").toURI()));
+        response.raw().getOutputStream().write(data);
+        response.raw().getOutputStream().close();
+
+        FileUtils.forceDelete(new File("/home/cso/temps/", "cv0" + wH + ".jpg"));
+        response.body(new Gson().toJson(new Answers("Image successfully downloaded", 500)));
+        return new Gson().toJson(new Answers("Image successfully downloaded", 500));
+    }
 
 }
