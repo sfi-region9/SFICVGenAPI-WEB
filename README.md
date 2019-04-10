@@ -7,7 +7,7 @@ Its basicly an HTTP REST API build in Java connected to a basic implementation i
 A full documentation on how to create an SDK will be provided in Wiki Section
 
 
-
+Feel free to build the jar ( "mvn clean install" )
 Feel free to contribute in back end (main/java) or front end (main/ressource/publics)
 Submit an issue for the bugs, and PR for code/backgrounds
 Main developer : Colin 
