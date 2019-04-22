@@ -11,4 +11,4 @@ after_success:
 - curl --ftp-create-dirs
        -T cvserver.jar
        --key /tmp/sftp_rsa
-       sftp://${SFTP_USER}:${SFTP_PASSWORD}@pma.nwa2coco.fr/test/cvserver.jar
+       sftp://${SFTP_USER}:${SFTP_PASSWORD}@pma.nwa2coco.fr/test/CVGenerator-1.0-jar-with-dependencies.jar
