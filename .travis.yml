@@ -8,7 +8,7 @@ env:
 after_success:
 - echo "${SFTP_KEY}" | base64 --decode
 - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
-- sftp -i /tmp/sftp_rsa ${SFTP_USER}@pma.nwa2coco.fr:/home/cso/test <<< $'put CVGenerator-*.*-jar-with-dependencies.jar'
+- sftp -oIdentifyFile=/tmp/sftp_rsa ${SFTP_USER}@pma.nwa2coco.fr:/home/cso/test <<< $'put CVGenerator-*.*-jar-with-dependencies.jar'
 deploy:
   provider: releases
   api_key:
