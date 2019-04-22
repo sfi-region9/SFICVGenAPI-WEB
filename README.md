@@ -1,3 +1,4 @@
+https://travis-ci.com/coco33920/SFICVGenAPI-WEB.svg?branch=master
 <h1>Welcome in SFI CV Generator</h1>
 <h2>USS Versailles | Science Division and Graphic Dev Section</h2>
 <h3>Build in Java powered by SparkJava</h3>
