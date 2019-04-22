@@ -13,7 +13,7 @@ deploy:
   provider: releases
   api_key:
     secure: Tx2x7fWfbG6yLqoqb31Jj/WRAY2WQeoYGCS/+qMOkpYyMEb7wi3BTbV+hKEXwYlIGLWk/874CVCi0WR3X1cFD4LxidGCFcVOSA9+5+GfG6ufLUsMW6p4ColuM5Mk1iccwk2M+GdU5b2kHZw/RgguER6itN4Zb25PX+y+4bgpa3ucfZLY4YSiMCXPuQEidw8H6c58fga+OAbhTYUjZ/SBVNF2BqVy/3V6gqgqkhKJaXW8xLWDtfU1zH7UR5GqGJ8oxLt/GWOQrona9QTNGIAOsq5ncFOo+ykzMhyHlzORFvrJIh2033Vrei81wztIh/y2DGWcjIaxJW4HlqIJPTIswbODwfB1PdL9Q1sKq+UscyE4+T2PU6BXBP9SlvKPCK02xlPfaM0HRZQTw5rlfNC090vEsnjS2fFBrLqyFEYl1gPeYFb59ssHPCQ2lo6cF0Uz3zdobgrGtt12BPw5V6fKcXoHfEJ3Qj8HJlnqSGght56+SkizqKwEWiDO+WJ90BVmfl0QIfSszwfplX5Sp6cH1G8gcxOrBgamzeY9vaB5UAlW62VB9p9OnTONtdYD0u1Vrq2Nvkc8TRHf7Pa0ufsF/sxPgDPT8OLwHIgOvuTNY66KCHk1BKfY7dGSj6x1YZ8OoSdaalLlu8dU4X28B/YbciY4a9+5gAnlQCnySHzB4+E=
-  file: CVGenerator-1.0-jar-with-dependencies.jar
+  file: CVGenerator-*.*-jar-with-dependencies.jar
   on:
     repo: coco33920/SFICVGenAPI-WEB
     tags: true
