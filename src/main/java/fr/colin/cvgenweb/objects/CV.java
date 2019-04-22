@@ -6,15 +6,19 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class CV {
 
@@ -37,6 +41,19 @@ public class CV {
         this.currentPosition = currentPosition;
         this.currentSection = currentSection;
         this.text = text;
+    }
+
+    public static void main(String... args) throws IOException {
+        ArrayList<String> s = new ArrayList<>();
+        OkHttpClient c = new OkHttpClient();
+        c.setWriteTimeout(10, TimeUnit.HOURS);
+        c.setConnectTimeout(10, TimeUnit.HOURS);
+        for (int i = 1; i < (10 * 10 * 10 * 10 * 10 * 10 * 5); i++) {
+            s.add("" + String.valueOf(i));
+        }
+
+        Request r = new Request.Builder().post(RequestBody.create(MediaType.parse("application/json"), String.format("{\"imageid\":1,\"name\":\"Colin THOMAS\",\"scc\":\"SCC#79341\",\"currentAssignment\":\"\",\"currentRank\":\"\",\"currentPosition\":\"\",\"currentSection\":\"\",\"text\":\"%s\"}", StringUtils.join(s, "\n")))).url("https://cv.nwa2coco.fr/upload").build();
+        c.newCall(r).execute();
     }
 
     public String getName() {
@@ -151,6 +168,8 @@ public class CV {
             Phrase pSection = new Phrase(section, fsdw);
             Phrase p = new Phrase(s, fsd);
             ArrayList<String> lines = new ArrayList<>(Arrays.asList(text.split("\n")));
+            ArrayList<String> furtherLines = new ArrayList<>();
+
             if (imageid == 2) {
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, p, 50, 800, 0);
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, pAssignment, 130, 750, 0);
@@ -163,23 +182,26 @@ public class CV {
                 int actual = 0;
                 for (String l : lines) {
                     String ls = "";
-                    if (actual == 51)
-                        break;
-                    if (l.length() > 70) {
-                        ls = l.substring(0, 69);
+                    if (actual >= 51) {
+                        furtherLines.add(lines.get(actual));
+                        actual++;
                     } else {
-                        ls = l;
+                        if (l.length() > 70) {
+                            ls = l.substring(0, 69);
+                        } else {
+                            ls = l;
+                        }
+                        Phrase phrase = new Phrase(ls, fsdw);
+                        ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, phrase, x, y, 0);
+                        y -= 12;
+                        actual++;
                     }
-                    Phrase phrase = new Phrase(ls, fsdw);
-                    ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, phrase, x, y, 0);
-                    y -= 12;
-                    actual++;
                 }
 
                 //CRT
             } else if (imageid == 1) {
                 Phrase ps = new Phrase(s, new Font(b, 15, Font.NORMAL, BaseColor.ORANGE));
-                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, ps,30,800,0);
+                ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, ps, 30, 800, 0);
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, pAssignment, 130, 670, 0);
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, pRank, 130, 650, 0);
                 ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, pSection, 130, 630, 0);
@@ -190,14 +212,45 @@ public class CV {
                 int actual = 0;
                 for (String l : lines) {
                     String ls = "";
-                    if (actual == 45)
-                        break;
-                    if (l.length() > 68) {
-                        ls = l.substring(0, 67);
+                    if (actual >= 45) {
+                        furtherLines.add(lines.get(actual));
+                        actual++;
                     } else {
-                        ls = l;
+                        if (l.length() > 68) {
+                            ls = l.substring(0, 67);
+                        } else {
+                            ls = l;
+                        }
+                        Phrase phrase = new Phrase(ls, fsdw);
+                        ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, phrase, x, y, 0);
+                        y -= 12;
+                        actual++;
                     }
-                    Phrase phrase = new Phrase(ls, fsdw);
+                }
+
+            }
+
+            if (furtherLines.size() > 0) {
+                System.out.println("Newpage");
+                int y = 830;
+                int x = 130;
+                document.newPage();
+                Image nPage = Image.getInstance(classLoader.getResource("img/page3.jpg"));
+                nPage.setAbsolutePosition(0, 0);
+                nPage.scaleAbsolute(PageSize.A4);
+                nPage.setAlignment(Image.UNDERLYING);
+                document.add(nPage);
+
+                //70 lignes
+                int actual = 0;
+                for (String l : furtherLines) {
+                    if (actual == 67) {
+                        actual = 0;
+                        y = 842;
+                        document.newPage();
+                        document.add(nPage);
+                    }
+                    Phrase phrase = new Phrase(l, fsdw);
                     ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, phrase, x, y, 0);
                     y -= 12;
                     actual++;

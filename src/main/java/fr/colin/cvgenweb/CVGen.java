@@ -14,7 +14,12 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.thread.ThreadPool;
 import spark.Response;
+import spark.embeddedserver.EmbeddedServers;
+import spark.embeddedserver.jetty.EmbeddedJettyFactory;
+import spark.embeddedserver.jetty.JettyServerFactory;
 
 import javax.imageio.ImageIO;
 import javax.servlet.MultipartConfigElement;
@@ -30,11 +35,16 @@ import static spark.Spark.*;
 public class CVGen {
 
 
-    public static String baseServeur = "http://cv.nwa2coco.fr/";
+    public static String baseServeur = "https://cv.nwa2coco.fr/";
     private final static int numberOfImage = 2;
 
+    static int count = 0;
 
     public static void main(String... args) {
+        CustomJettyServerFactory f = new CustomJettyServerFactory();
+        EmbeddedServers.add(EmbeddedServers.Identifiers.JETTY, new EmbeddedJettyFactory(f));
+
+
         ipAddress("127.0.0.1");
         port(4444);
 
@@ -44,6 +54,7 @@ public class CVGen {
 
     private static void setupRoutes() {
         staticFileLocation("/publics");
+        System.out.println("Launching");
         get("/hello/:name", (request, response) -> "Hello : " + request.params("name"));
         get("/hello", (request, response) -> "Hello, world");
 
@@ -63,14 +74,15 @@ public class CVGen {
 
             CV cv = new CV(Integer.parseInt(imageId), name, scc, crtAssigment, crtRank, crtPosition, crtSection, text);
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(cv));
-            Request request1 = new Request.Builder().url("http://cv.nwa2coco.fr/upload").post(requestBody).build();
+            Request request1 = new Request.Builder().url("https://cv.nwa2coco.fr/upload").post(requestBody).build();
             com.squareup.okhttp.Response response1 = new OkHttpClient().newCall(request1).execute();
 
 
             response.type("application/json");
             response.status(300);
             String body = response1.body().string();
-            System.out.println(body);
+            count++;
+            System.out.println("Number " + count + " ");
 
 
             CVAnswer cvAnswer = new Gson().fromJson(body, CVAnswer.class);
@@ -103,6 +115,9 @@ public class CVGen {
                     "</html>";
         });
 
+        get("/keep_alive", (request, response) -> "I'm alive !");
+        get("/count", (request, response) -> "" + count);
+
         post("/upload", (request, response) -> {
             CV cv = new Gson().fromJson(request.body(), CV.class);
             String s = cv.process();
@@ -116,7 +131,7 @@ public class CVGen {
                 return new Gson().toJson(answer);
             }
 
-            CVAnswer answer1 = new CVAnswer("Your CV is successfully uploaded.", 300, "http://cv.nwa2coco.fr/file/" + s + "/download_pdf", "");
+            CVAnswer answer1 = new CVAnswer("Your CV is successfully uploaded.", 300, "https://cv.nwa2coco.fr/file/" + s + "/download_pdf", "");
             response.type("application/json");
             response.status(301);
             response.body(new Gson().toJson(answer1));
@@ -131,9 +146,11 @@ public class CVGen {
             byte[] data = Files.readAllBytes(Paths.get(f.toURI()));
             response.type("application/pdf");
             response.header("Content-Disposition", "inline; filename=" + id + ".pdf");
+            response.header("Content-Length", f.length() + "");
             response.raw().getOutputStream().write(data);
             response.raw().getOutputStream().close();
             FileUtils.forceDelete(f);
+
             FileUtils.deleteDirectory(new File("/home/cso/cvgen_results/" + id + "/"));
             return new Gson().toJson(new Answers("File is successfully downloaded", 301));
         });
@@ -256,6 +273,20 @@ public class CVGen {
         FileUtils.forceDelete(new File("/home/cso/temps/", "cv0" + wH + ".jpg"));
         response.body(new Gson().toJson(new Answers("Image successfully downloaded", 500)));
         return new Gson().toJson(new Answers("Image successfully downloaded", 500));
+    }
+
+    static class CustomJettyServerFactory implements JettyServerFactory {
+        @Override
+        public Server create(int maxThreads, int minThreads, int threadTimeoutMillis) {
+            Server server = new Server();
+            server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", -1);
+            return server;
+        }
+
+        @Override
+        public Server create(ThreadPool threadPool) {
+            return null;
+        }
     }
 
 }
