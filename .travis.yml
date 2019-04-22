@@ -17,3 +17,4 @@ deploy:
   file: CVGenerator-1.0-jar-with-dependencies.jar
   on:
     repo: coco33920/SFICVGenAPI-WEB
+    tags: true
