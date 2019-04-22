@@ -8,7 +8,7 @@ env:
   - SFTP_KEY=AAAAB3NzaC1yc2EAAAADAQABAAABAQDvR5ZMofnLQapvyDuno6hoUQAq5WJkPg7Dsj76kwEDdeB5cJCTN95UzdvopB/AhOjdR6alwuoIfahDIVDYdwNtR+KkIac5JvtKvtSlsPkVNOA5HyCWFDJ3dTJE+P2M41mt0lvSWT4Sgx0NYrxdrS3+rG1z4075sz3liGjfFl+mtsnXMXpOoWRtrn52krVsVv6wK1Ls/OCh1JFMxdfarFclZ+yF18sirEAquEiDN6g2M4z46cFESERfyOiO+2iABBK+prlRUu7U4I2C3nNAWM1Hyc2X+iLlEE2A5sVocGV6MY0Midp0U4LPIe7+L6xQDiptGaBrxRlF8tdF/c95dgkF
 after_success:
 - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
-- sftp ${SFTP_USER}@pma.nwa2coco.fr:/home/cso/test <<< $'put CVGenerator-*.*-jar-with-dependencies.jar'
+- sftp -i /tmp/sftp_rsa ${SFTP_USER}@pma.nwa2coco.fr:/home/cso/test <<< $'put CVGenerator-*.*-jar-with-dependencies.jar'
 deploy:
   provider: releases
   api_key:
