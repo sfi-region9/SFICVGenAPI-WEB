@@ -9,6 +9,6 @@ env:
 after_success:
 - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
 - curl --ftp-create-dirs
-       -T CVGenerator-1.0-jar-with-dependencies.jar
+       -T /home/travis/.m2/repository/fr/colin/cvgen/CVGenerator/1.0/CVGenerator-1.0-jar-with-dependencies.jar
        --key /tmp/sftp_rsa
        sftp://${SFTP_USER}:${SFTP_PASSWORD}@pma.nwa2coco.fr/test/CVGenerator-1.0-jar-with-dependencies.jar
