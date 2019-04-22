@@ -9,6 +9,6 @@ env:
 after_success:
 - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
 - curl --ftp-create-dirs
-       -T filename
+       -T cvserver.jar
        --key /tmp/sftp_rsa
-       sftp://${SFTP_USER}:${SFTP_PASSWORD}@example.com/directory/filename
+       sftp://${SFTP_USER}:${SFTP_PASSWORD}@pma.nwa2coco.fr/test/cvserver.jar
